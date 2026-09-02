@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WADI — London's contemporary late-night coffee house</title>
+<meta name="description" content="WADI is a specialty coffee and dessert house opening near Marble Arch, London — designed to stay relevant from afternoon into the late evening.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;1,9..144,500&family=Work+Sans:wght@300;400;600&family=Noto+Sans+Arabic:wght@400&family=El+Messiri:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --brown:#3B2D26;
+    --brown-deep:#2A2019;
+    --limestone:#9E8A6C;
+    --limestone-deep:#86755C;
+    --cream:#C7AE83;
+    --taupe:#A9947E;
+    --charcoal:#211E1B;
+    --stone:#8A7B6A;
+    --line:rgba(59,45,38,0.18);
+    --shadow-soft:0 20px 40px -12px rgba(33,30,27,0.28);
+    --shadow-lift:0 26px 50px -14px rgba(33,30,27,0.34);
+    --max-w:1240px;
+    --lang-scale:1;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:radial-gradient(140% 100% at 15% 0%, var(--limestone-deep) 0%, var(--limestone) 55%);
+    color:var(--charcoal);
+    font-family:'Work Sans',sans-serif;
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    line-height:1.5;
+  }
+  ::selection{background:var(--brown);color:var(--cream);}
+  a{color:inherit;text-decoration:none;}
+  img{display:block;max-width:100%;}
+  p{margin:0;}
+  .wrap{max-width:var(--max-w);margin:0 auto;padding:0 28px;}
+  section{position:relative;}
+  .arabic{font-family:'Noto Sans Arabic',sans-serif;}
+
+  /* combined grain + mottle texture in a single overlay — one feTurbulence
+     pass with mixed x/y frequencies gives both fine grain and coarser
+     material variation without paying for two separate full-page
+     mix-blend-mode compositing layers */
+  .grain{
+    position:fixed;inset:0;pointer-events:none;z-index:400;
+    opacity:0.06;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03 0.55' numOctaves='3' seed='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size:300px 300px;
+  }
+
+  /* scroll progress bar */
+  .scroll-progress{
+    position:fixed;top:0;left:0;height:2.5px;background:var(--brown);
+    z-index:999;width:0%;transition:width 0.05s linear;
+  }
+
+
+  .h-label{
+    font-family:'Fraunces',serif;font-style:italic;
+    font-size:calc(14px * var(--lang-scale));letter-spacing:0.02em;
+    color:var(--stone);font-weight:500;
+  }
+  h1,h2,h3{margin:0;font-weight:500;letter-spacing:-0.01em;font-family:'Fraunces',serif;}
+  .display{letter-spacing:-0.01em;font-weight:500;}
+
+  /* reveal-on-scroll (calm fade + slight rise, no bounce) */
+  .reveal{opacity:0;transform:translateY(22px);transition:opacity 1.1s cubic-bezier(.2,.7,.3,1), transform 1.1s cubic-bezier(.2,.7,.3,1);}
+  .reveal.visible{opacity:1;transform:translateY(0);}
+  .reveal-img{overflow:hidden;}
+  .reveal-img .inner-scale{transform:scale(1.08);transition:transform 1.6s cubic-bezier(.2,.7,.3,1);}
+  .reveal-img.visible .inner-scale{transform:scale(1);}
+
+  @media(prefers-reduced-motion:reduce){
+    .reveal, .reveal-img .inner-scale{transition:none !important;opacity:1 !important;transform:none !important;}
+  }
+
+  /* hover-lift: subtle rise + cast shadow, used on cards/images/tiles */
+  .hover-lift{
+    transition:transform .45s cubic-bezier(.2,.7,.3,1), box-shadow .45s cubic-bezier(.2,.7,.3,1);
+  }
+  .hover-lift:hover{
+    transform:translateY(-7px);
+    box-shadow:var(--shadow-lift);
+    will-change:transform;
+  }
+  .btn{position:relative;}
+  .btn-lift{transition:transform .35s cubic-bezier(.2,.7,.3,1), box-shadow .35s cubic-bezier(.2,.7,.3,1) !important;}
+  .btn-lift:hover{transform:translateY(-3px);box-shadow:var(--shadow-soft);}
+
+  /* ---------------- NAV ---------------- */
+  header.nav{
+    position:fixed;top:0;left:0;right:0;z-index:120;
+    padding:24px 0;transition:background .5s ease, padding .5s ease, border-color .5s ease;
+    border-bottom:1px solid transparent;
+    opacity:0;pointer-events:none;
+  }
+  @media(prefers-reduced-motion:reduce){
+    header.nav{opacity:1;pointer-events:auto;}
+  }
+  header.nav.solid{
+    background:color-mix(in srgb, var(--limestone) 92%, transparent);backdrop-filter:blur(7px);
+    padding:16px 0;border-bottom:1px solid var(--line);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;gap:18px;}
+  .logo{font-size:16px;letter-spacing:0.18em;font-weight:600;}
+  nav.links{display:flex;gap:34px;}
+  nav.links a{font-size:13px;letter-spacing:0.04em;color:var(--charcoal);opacity:0.75;transition:opacity .3s;position:relative;padding-bottom:2px;}
+  nav.links a:hover{opacity:1;}
+  nav.links a::after{
+    content:'';position:absolute;left:0;bottom:0;width:0;height:1px;
+    background:var(--brown);transition:width .35s cubic-bezier(.2,.7,.3,1);
+  }
+  nav.links a:hover::after{width:100%;}
+  .badge{
+    font-size:11px;letter-spacing:0.14em;border:1px solid var(--stone);
+    padding:7px 14px;color:var(--stone);
+  }
+  .menu-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;color:var(--charcoal);}
+  .lang-toggle{
+    font-size:12px;letter-spacing:0.08em;color:var(--charcoal);opacity:0.75;
+    border:1px solid var(--stone);padding:6px 13px;background:none;cursor:pointer;
+    font-family:inherit;transition:opacity .3s, border-color .3s;
+  }
+  .lang-toggle:hover{opacity:1;border-color:var(--charcoal);}
+
+  /* ---------------- ARABIC / RTL MODE ---------------- */
+  body.lang-ar{font-family:'Noto Sans Arabic',sans-serif;--lang-scale:1.1;}
+  body.lang-ar h1, body.lang-ar h2, body.lang-ar h3, body.lang-ar .h-label{
+    font-family:'El Messiri',sans-serif;font-style:normal;
+  }
+  body.lang-ar h2{line-height:1.35;}
+  body.lang-ar .h-label{font-weight:600;}
+  body.lang-ar .btn, body.lang-ar nav.links a, body.lang-ar .badge,
+  body.lang-ar .menu-list, body.lang-ar .coffee-tab, body.lang-ar .lang-toggle,
+  body.lang-ar .hero-line, body.lang-ar .hero-sub, body.lang-ar .veil-cue,
+  body.lang-ar .foot-col span, body.lang-ar .dn-col ul{
+    font-family:'Noto Sans Arabic',sans-serif;letter-spacing:0;
+  }
+  body.lang-ar .logo, body.lang-ar .hero-word{font-family:'El Messiri',sans-serif;letter-spacing:0;}
+
+  /* ---------------- VEIL REVEAL: doors opening on the room ---------------- */
+  .veil-wrap{height:150vh;position:relative;z-index:130;}
+  .veil-sticky{position:sticky;top:0;height:100vh;overflow:hidden;}
+  .veil-panel{
+    position:absolute;top:0;width:50%;height:100%;z-index:150;
+    background-image:
+      repeating-linear-gradient(115deg, rgba(199,174,131,0.045) 0 2px, transparent 2px 30px),
+      linear-gradient(160deg,#4A392E 0%, var(--brown-deep) 100%);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .veil-left{
+    left:0;
+    box-shadow:inset -18px 0 34px -12px rgba(199,174,131,0.28);
+  }
+  .veil-right{
+    right:0;
+    box-shadow:inset 18px 0 34px -12px rgba(199,174,131,0.28);
+  }
+  .veil-cue{
+    font-size:11px;letter-spacing:0.2em;text-transform:uppercase;
+    color:rgba(199,174,131,0.55);animation:veilPulse 2.6s ease-in-out infinite;
+    position:absolute;bottom:14%;left:0;right:0;text-align:center;
+  }
+  @keyframes veilPulse{0%,100%{opacity:0.3;}50%{opacity:0.8;}}
+  @media(prefers-reduced-motion:reduce){
+    .veil-panel{display:none;}
+    .veil-wrap{height:100vh;}
+  }
+
+  /* ---------------- HERO ---------------- */
+  .hero{
+    height:100vh;min-height:680px;position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;overflow:hidden;
+    background-image:
+      linear-gradient(180deg, rgba(33,30,27,0.4) 0%, rgba(33,30,27,0.62) 100%),
+      url('images/hero.jpg'),
+      repeating-linear-gradient(115deg, rgba(199,174,131,0.05) 0 2px, transparent 2px 30px),
+      linear-gradient(160deg,#4A392E 0%, #2A2019 100%);
+    background-size:cover, cover, auto, auto;
+    background-position:center, center, center, center;
+  }
+  .hero-inner{position:relative;z-index:2;padding:0 24px;will-change:transform, opacity;}
+  .hero-word-ar{
+    font-family:'Noto Sans Arabic',sans-serif;font-size:clamp(30px,4vw,44px);
+    color:var(--cream);margin-bottom:14px;font-weight:400;
+  }
+  .hero-word{
+    font-family:'Fraunces',serif;
+    font-size:clamp(46px,9vw,110px);letter-spacing:0.08em;color:var(--cream);
+    font-weight:500;line-height:1;
+  }
+  .hero-line{
+    margin-top:26px;font-size:14px;letter-spacing:0.22em;color:var(--taupe);
+    text-transform:uppercase;
+  }
+  .hero-sub{margin-top:10px;font-size:13px;letter-spacing:0.12em;color:rgba(199,174,131,0.6);text-transform:uppercase;}
+  .hero-ctas{margin-top:52px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
+  .btn{
+    font-size:12px;letter-spacing:0.14em;text-transform:uppercase;padding:15px 30px;
+    transition:all .4s ease;display:inline-block;
+  }
+  .btn-solid{background:var(--cream);color:var(--charcoal);}
+  .btn-solid:hover{background:var(--taupe);}
+  .btn-outline{border:1px solid rgba(199,174,131,0.5);color:var(--cream);}
+  .btn-outline:hover{border-color:var(--cream);}
+  .btn-dark{background:var(--brown);color:var(--cream);}
+  .btn-dark:hover{background:var(--charcoal);}
+  .btn-outline-dark{border:1px solid var(--stone);color:var(--charcoal);}
+  .btn-outline-dark:hover{border-color:var(--charcoal);}
+
+  section.pad{padding:130px 0;}
+  @media(max-width:780px){section.pad{padding:88px 0;}}
+
+  /* ---------------- SECTION 2: THE IDEA ---------------- */
+  .idea{background:radial-gradient(120% 100% at 85% 0%, var(--limestone-deep) 0%, var(--limestone) 60%);text-align:center;}
+  .idea .h-label{display:block;margin-bottom:26px;}
+  .idea h2{
+    font-size:clamp(calc(28px * var(--lang-scale)), calc(5vw * var(--lang-scale)), calc(54px * var(--lang-scale)));max-width:16ch;margin:0 auto;line-height:1.15;
+  }
+  .idea p.body{
+    max-width:52ch;margin:34px auto 0;font-size:16px;color:var(--charcoal);
+    opacity:0.82;font-weight:300;line-height:1.75;
+  }
+
+  /* ---------------- SECTION 3: PILLARS ---------------- */
+  .pillars{background:linear-gradient(160deg, var(--cream) 0%, var(--limestone) 130%);}
+  .pillar-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);margin-top:70px;border:1px solid var(--line);}
+  .pillar{background:var(--cream);padding:56px 38px;}
+  .pillar .h-label{margin-bottom:22px;display:block;}
+  .pillar h3{font-size:calc(24px * var(--lang-scale));letter-spacing:-0.005em;margin-bottom:18px;font-weight:500;}
+  .pillar .menu-list{margin:20px 0 24px;font-size:12.5px;letter-spacing:0.08em;color:var(--stone);text-transform:uppercase;line-height:2.1;}
+  .pillar p{font-size:14.5px;color:var(--charcoal);opacity:0.78;line-height:1.7;font-weight:300;}
+
+  /* ---------------- SECTION 4: THE SPACE ---------------- */
+  .space-section{background:var(--brown);color:var(--cream);}
+  .space-inner{display:grid;grid-template-columns:1fr 1fr;gap:70px;align-items:center;}
+  .space-text h2{font-size:clamp(calc(28px * var(--lang-scale)), calc(4vw * var(--lang-scale)), calc(46px * var(--lang-scale)));line-height:1.15;}
+  .space-text p{margin-top:26px;font-size:15px;color:rgba(199,174,131,0.75);line-height:1.75;max-width:46ch;font-weight:300;}
+  .space-image{aspect-ratio:4/5;
+      background-image:url('images/space.jpg'),
+      repeating-linear-gradient(115deg, rgba(199,174,131,0.05) 0 2px, transparent 2px 26px),
+      linear-gradient(150deg,#4A392E,#221A15);
+      background-size:cover, auto, auto;
+      background-position:center, center, center;
+      border:1px solid rgba(199,174,131,0.12);
+      display:flex;align-items:center;justify-content:center;
+  }
+  .frame-cap{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(199,174,131,0.4);text-align:center;padding:20px;}
+
+  /* ---------------- SECTION 5: DESIGN LANGUAGE ---------------- */
+  .dl-section{background:radial-gradient(120% 100% at 10% 100%, var(--limestone-deep) 0%, var(--limestone) 60%);}
+  .dl-scroll{
+    display:flex;gap:18px;margin-top:60px;overflow-x:auto;padding-bottom:20px;
+    scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;
+  }
+  .dl-scroll::-webkit-scrollbar{height:4px;}
+  .dl-scroll::-webkit-scrollbar-thumb{background:var(--stone);}
+  .dl-item{
+    flex:0 0 240px;aspect-ratio:3/4;scroll-snap-align:start;
+    background:repeating-linear-gradient(120deg, rgba(59,45,38,0.05) 0 2px, transparent 2px 22px), var(--cream);
+    border:1px solid var(--line);display:flex;align-items:flex-end;padding:16px;
+    position:relative;overflow:hidden;
+  }
+  .dl-item span{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--stone);position:relative;z-index:2;}
+  .dl-item.dark{background:repeating-linear-gradient(120deg, rgba(199,174,131,0.06) 0 2px, transparent 2px 22px), var(--brown);}
+  .dl-item.dark span{color:var(--taupe);}
+
+  /* material sheen — a soft light that follows the cursor across gallery
+     and build tiles, like light catching a physical material sample */
+  .sheen{
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(199,174,131,0.55), transparent 60%);
+    opacity:0;transition:opacity .35s ease;
+  }
+  .dl-item.dark .sheen{background:radial-gradient(220px circle at var(--mx,50%) var(--my,50%), rgba(255,250,240,0.22), transparent 60%);}
+  .hover-lift:hover .sheen{opacity:1;}
+
+  /* ---------------- SECTION 6: DAY -> NIGHT ---------------- */
+  .dn-wrap{height:280vh;position:relative;}
+  .dn-sticky{position:sticky;top:0;height:100vh;overflow:hidden;display:flex;align-items:center;transition:background 0.1s linear;}
+  .dn-sky-track{position:absolute;inset:0;z-index:1;pointer-events:none;}
+  .dn-celestial{
+    position:absolute;width:96px;height:96px;
+    left:50%;top:70%;transform:translate(-50%,-50%);
+  }
+  .dn-glow{
+    position:absolute;inset:-40px;border-radius:50%;
+    background:radial-gradient(circle, rgba(235,206,156,0.5) 0%, rgba(235,206,156,0.18) 45%, rgba(235,206,156,0) 72%);
+    filter:blur(6px);
+    transition:background 0.2s linear;
+  }
+  .dn-inner{position:relative;z-index:2;width:100%;}
+  .dn-cols{display:grid;grid-template-columns:1fr 1fr;gap:50px;}
+  .dn-col{transition:opacity 0.15s linear;}
+  .dn-col .h-label{display:block;margin-bottom:18px;}
+  .dn-col h3{font-size:clamp(calc(24px * var(--lang-scale)), calc(3vw * var(--lang-scale)), calc(34px * var(--lang-scale)));margin-bottom:20px;}
+  .dn-col ul{list-style:none;margin:0;padding:0;font-size:13px;letter-spacing:0.06em;text-transform:uppercase;color:var(--stone);line-height:2.2;}
+  @media(max-width:780px){.dn-cols{grid-template-columns:1fr;gap:36px;}}
+
+  /* ---------------- SECTION 7: COFFEE PROGRAMME ---------------- */
+  .coffee-section{background:var(--brown);color:var(--cream);text-align:center;}
+  .coffee-section .h-label{color:var(--taupe);}
+  .coffee-section h2{font-size:clamp(calc(28px * var(--lang-scale)), calc(4vw * var(--lang-scale)), calc(44px * var(--lang-scale)));margin-top:24px;max-width:18ch;margin-left:auto;margin-right:auto;}
+  .coffee-section p.body{max-width:50ch;margin:28px auto 0;font-size:15px;color:rgba(199,174,131,0.72);line-height:1.75;font-weight:300;}
+  .coffee-interactive{margin-top:64px;text-align:left;}
+  .coffee-tabs{
+    display:flex;flex-wrap:wrap;border-top:1px solid rgba(199,174,131,0.18);
+    border-bottom:1px solid rgba(199,174,131,0.18);
+  }
+  .coffee-tab{
+    background:none;border:none;border-inline-end:1px solid rgba(199,174,131,0.18);
+    font-family:inherit;font-size:14px;letter-spacing:0.03em;color:rgba(199,174,131,0.55);
+    padding:20px 26px;cursor:pointer;transition:color .3s ease, background .3s ease;
+    position:relative;flex:1;text-align:center;min-width:110px;
+  }
+  .coffee-tab:last-child{border-inline-end:none;}
+  .coffee-tab::after{
+    content:'';position:absolute;left:0;bottom:-1px;width:100%;height:2px;
+    background:var(--cream);transform:scaleX(0);transition:transform .4s cubic-bezier(.2,.7,.3,1);
+  }
+  .coffee-tab:hover{color:rgba(199,174,131,0.85);background:rgba(199,174,131,0.04);}
+  .coffee-tab.active{color:var(--cream);}
+  .coffee-tab.active::after{transform:scaleX(1);}
+  .coffee-detail{padding:40px 4px 0;min-height:120px;}
+  .coffee-detail-text{
+    font-size:17px;line-height:1.7;color:var(--cream);font-weight:300;max-width:52ch;
+    opacity:0;transform:translateY(8px);transition:opacity .4s ease, transform .4s ease;
+  }
+  .coffee-detail-text.show{opacity:1;transform:translateY(0);}
+  .coffee-meter{display:flex;align-items:center;gap:16px;margin-top:28px;max-width:340px;}
+  .coffee-meter-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:rgba(199,174,131,0.5);width:70px;flex-shrink:0;}
+  .coffee-meter-track{flex:1;height:2px;background:rgba(199,174,131,0.18);position:relative;}
+  .coffee-meter-fill{
+    position:absolute;top:0;left:0;height:100%;background:var(--cream);
+    transition:width .7s cubic-bezier(.2,.7,.3,1);
+  }
+  @media(max-width:780px){
+    .coffee-tab{flex:0 0 50%;border-bottom:1px solid rgba(199,174,131,0.18);}
+  }
+
+  /* ---------------- SECTION 8: DESSERT ---------------- */
+  .dessert-section{background:linear-gradient(200deg, var(--cream) 0%, var(--limestone) 140%);}
+  .dessert-inner{display:grid;grid-template-columns:1.1fr 0.9fr;gap:70px;align-items:center;}
+  .dessert-image{aspect-ratio:5/6;
+    background-image:url('images/dessert.jpg'), repeating-linear-gradient(110deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 28px), linear-gradient(var(--limestone),var(--limestone));
+    background-size:cover, auto, auto;
+    background-position:center, center, center;
+    border:1px solid var(--line);display:flex;align-items:center;justify-content:center;}
+  .dessert-text h2{font-size:clamp(calc(28px * var(--lang-scale)), calc(4vw * var(--lang-scale)), calc(42px * var(--lang-scale)));line-height:1.2;}
+  .dessert-text p{margin-top:24px;font-size:15px;color:var(--charcoal);opacity:0.8;line-height:1.75;font-weight:300;max-width:42ch;}
+  .dessert-text .kicker-line{margin-top:24px;font-style:normal;font-size:15px;color:var(--stone);}
+  @media(max-width:900px){.dessert-inner{grid-template-columns:1fr;gap:36px;}}
+
+  /* ---------------- SECTION 9: CULTURAL INFLUENCE ---------------- */
+  .culture-section{background:radial-gradient(100% 140% at 50% 100%, var(--limestone-deep) 0%, var(--limestone) 65%);text-align:center;}
+  .culture-section h2{font-size:clamp(calc(26px * var(--lang-scale)), calc(3.6vw * var(--lang-scale)), calc(40px * var(--lang-scale)));max-width:20ch;margin:24px auto 0;}
+  .culture-section p{max-width:56ch;margin:30px auto 0;font-size:15.5px;color:var(--charcoal);opacity:0.78;line-height:1.8;font-weight:300;}
+
+  /* ---------------- SECTION 10: LOCATION ---------------- */
+  .location-section{background:linear-gradient(170deg, var(--cream) 0%, var(--limestone) 150%);}
+  .loc-inner{display:grid;grid-template-columns:1fr 1fr;gap:70px;}
+  .loc-text h2{font-size:clamp(calc(26px * var(--lang-scale)), calc(3.6vw * var(--lang-scale)), calc(40px * var(--lang-scale)));}
+  .loc-text p{margin-top:22px;font-size:15px;color:var(--charcoal);opacity:0.78;line-height:1.75;font-weight:300;max-width:46ch;}
+  .loc-text .btn{margin-top:34px;}
+  .contact-form{display:flex;flex-direction:column;gap:16px;}
+  .contact-form input, .contact-form textarea{
+    background:transparent;border:none;border-bottom:1px solid var(--stone);
+    padding:12px 2px;font-family:inherit;font-size:14px;color:var(--charcoal);
+    outline:none;transition:border-color .3s;
+  }
+  .contact-form input::placeholder, .contact-form textarea::placeholder{color:var(--stone);}
+  .contact-form input:focus, .contact-form textarea:focus{border-color:var(--brown);}
+  .contact-form textarea{resize:vertical;min-height:80px;}
+  .form-note{font-size:11.5px;color:var(--stone);margin-top:4px;}
+  @media(max-width:900px){.loc-inner{grid-template-columns:1fr;gap:44px;}}
+
+  /* ---------------- SECTION 11: BUILDING WADI ---------------- */
+  .build-section{background:radial-gradient(120% 100% at 90% 0%, var(--limestone-deep) 0%, var(--limestone) 60%);}
+  .build-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:64px;}
+  .build-item{aspect-ratio:3/4;background:repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), var(--cream);border:1px solid var(--line);display:flex;align-items:flex-end;padding:14px;position:relative;overflow:hidden;}
+  .build-item span{font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--stone);position:relative;z-index:2;}
+  @media(max-width:780px){.build-grid{grid-template-columns:repeat(2,1fr);}}
+
+  /* ---------------- SECTION 12: EMAIL SIGNUP ---------------- */
+  .signup-section{background:var(--brown);color:var(--cream);text-align:center;}
+  .signup-section h2{font-size:clamp(calc(28px * var(--lang-scale)), calc(4vw * var(--lang-scale)), calc(44px * var(--lang-scale)));margin-top:20px;}
+  .signup-section p{margin-top:20px;font-size:14px;color:rgba(199,174,131,0.65);line-height:1.8;}
+  .signup-form{
+    margin:44px auto 0;max-width:440px;display:flex;gap:0;border-bottom:1px solid rgba(199,174,131,0.4);
+  }
+  .signup-form input{
+    flex:1;background:transparent;border:none;padding:14px 4px;color:var(--cream);
+    font-family:inherit;font-size:14px;outline:none;
+  }
+  .signup-form input::placeholder{color:rgba(199,174,131,0.4);}
+  .signup-form button{
+    background:none;border:none;color:var(--cream);font-size:12px;letter-spacing:0.14em;
+    text-transform:uppercase;cursor:pointer;padding:14px 6px;
+  }
+  .signup-msg{margin-top:18px;font-size:13px;color:var(--taupe);min-height:18px;}
+
+  /* ---------------- FOOTER ---------------- */
+  footer{background:var(--charcoal);color:var(--cream);padding:64px 0 32px;}
+  .foot-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px;margin-bottom:56px;}
+  .foot-logo{font-size:15px;letter-spacing:0.18em;}
+  .foot-logo .arabic{display:block;font-size:20px;margin-top:6px;letter-spacing:0;}
+  .foot-links{display:flex;gap:60px;flex-wrap:wrap;}
+  .foot-col span{display:block;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--stone);margin-bottom:16px;}
+  .foot-col a{display:block;font-size:13.5px;color:rgba(199,174,131,0.75);margin-bottom:10px;}
+  .foot-bottom{
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    border-top:1px solid rgba(199,174,131,0.12);padding-top:26px;
+    font-size:11.5px;color:rgba(199,174,131,0.45);
+  }
+  .foot-bottom .legal a{margin-inline-start:18px;color:rgba(199,174,131,0.45);}
+
+  @media(max-width:860px){
+    nav.links,.badge{display:none;}
+    .menu-btn{display:block;}
+    .pillar-grid{grid-template-columns:1fr;}
+    .space-inner{grid-template-columns:1fr;gap:36px;}
+    .space-image{order:-1;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <div class="logo" id="navLogo" data-ar="وادي">WADI</div>
+    <nav class="links">
+      <a href="#idea" data-ar="التجربة">Experience</a>
+      <a href="#culture" data-ar="من نحن">About</a>
+      <a href="#build" data-ar="يوميات">Journal</a>
+      <a href="#location" data-ar="تواصل">Contact</a>
+    </nav>
+    <span class="badge" data-ar="قريبًا">Coming soon</span>
+    <button class="lang-toggle" id="langToggle">عربي</button>
+    <button class="menu-btn" aria-label="Menu" id="menuBtn">—</button>
+  </div>
+</header>
+
+<!-- ============ SECTION 1: HERO ============ -->
+<section class="veil-wrap" id="veilWrap">
+  <div class="veil-sticky" id="veilSticky">
+    <section class="hero" id="hero">
+      <div class="hero-inner" id="heroInner">
+        <div class="hero-word-ar arabic">وادي</div>
+        <div class="hero-word">WADI</div>
+        <div class="hero-line" data-ar="قهوة · حلويات · سهر">Coffee · Dessert · Late</div>
+        <div class="hero-sub" data-ar="لندن · قريبًا">London · Coming soon</div>
+        <div class="hero-ctas">
+          <a class="btn btn-solid btn-lift btn-magnetic" href="#signup" data-ar="تابع الافتتاح">Follow the opening</a>
+          <a class="btn btn-outline btn-lift btn-magnetic" href="#idea" data-ar="اكتشف وادي">Discover WADI</a>
+        </div>
+      </div>
+    </section>
+    <div class="veil-panel veil-left" id="veilLeft" aria-hidden="true">
+      <span class="veil-cue" data-ar="مرر لفتح الباب">Scroll to open</span>
+    </div>
+    <div class="veil-panel veil-right" id="veilRight" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- ============ SECTION 2: THE IDEA ============ -->
+<section class="idea pad" id="idea">
+  <div class="wrap">
+    <span class="h-label reveal" data-ar="الفكرة">The idea</span>
+    <h2 class="reveal" data-ar="قهوة بعد انتهاء اليوم.">Coffee after the day ends.</h2>
+    <p class="body reveal" data-ar="وادي بيت قهوة لندني معاصر بُني لإيقاع مختلف: قهوة مختصة، حلويات استثنائية، ومكان مصمم بعناية للقاء، من بعد الظهر حتى المساء. مستوحى من ثقافة المقاهي الاجتماعية في الخليج، ومصمم للندن.">WADI is a contemporary London coffee house built for a different rhythm — specialty coffee, exceptional dessert and a carefully designed place to meet, from afternoon into the evening. Inspired by the social café culture of the Gulf. Designed for London.</p>
+  </div>
+</section>
+
+<!-- ============ SECTION 3: THREE PILLARS ============ -->
+<section class="pillars pad">
+  <div class="wrap">
+    <span class="h-label reveal" data-ar="ما هو وادي">What WADI is</span>
+    <div class="pillar-grid">
+      <div class="pillar reveal hover-lift tilt-card">
+        <span class="h-label">01</span>
+        <h3 data-ar="القهوة">Coffee</h3>
+        <div class="menu-list" data-ar="إسبريسو · قهوة مقطّرة · V60 · قهوة باردة · قهوة اليوم">Espresso · Filter · V60 · Cold brew · Coffee of the day</div>
+        <p data-ar="قهوة جادة بلا تكلّف. برنامج مدروس من الإسبريسو وقهوة أحادية المصدر متجددة، تُحضَّر ببساطة واتساق.">Serious coffee without the ceremony. A considered programme of espresso and rotating single-origin coffees, brewed simply and consistently.</p>
+      </div>
+      <div class="pillar reveal hover-lift tilt-card">
+        <span class="h-label">02</span>
+        <h3 data-ar="الحلويات">Dessert</h3>
+        <p data-ar="قائمة صغيرة تستحق أن تُتذكّر. يفضّل وادي مجموعة محدودة عمدًا من الحلويات الاستثنائية بدلاً من عرض مبالغ فيه. الملمس والنكهة والتقديم لها القيمة نفسها.">A small menu worth remembering. WADI favours a deliberately limited collection of exceptional desserts rather than an oversized display. Texture, flavour and presentation matter equally.</p>
+      </div>
+      <div class="pillar reveal hover-lift tilt-card">
+        <span class="h-label">03</span>
+        <h3 data-ar="سهر">Late</h3>
+        <p data-ar="لا ينبغي أن تختفي القهوة مع بداية المساء. صُمم وادي ليبقى حاضرًا بعد أن تُغلق مقاهي لندن المختصة أبوابها التقليدية، مكانًا للقاء والحديث ومواصلة السهرة.">Coffee shouldn't disappear when the evening begins. WADI is being designed to remain relevant later than the traditional London specialty café — somewhere to meet, talk and continue the evening.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 4: THE SPACE ============ -->
+<section class="space-section pad">
+  <div class="wrap space-inner">
+    <div class="space-text">
+      <span class="h-label reveal" style="color:var(--taupe);" data-ar="المكان">The space</span>
+      <h2 class="reveal" data-ar="صُمم لتبقى.<br>لا لتستقر.">Designed to stay.<br>Not to settle in.</h2>
+      <p class="reveal" data-ar="يوازن وادي بين الراحة والحركة. مقاعد قرب النافذة، طاولات مدمجة، ومساحات اجتماعية مخطط لها بعناية تصنع مكانًا مريحًا بما يكفي للاستمتاع به، دون أن يتحول إلى صالة عمل مشترك. تتغيّر الأجواء تدريجيًا من بعد الظهر إلى المساء عبر الإضاءة والموسيقى والمنتج.">WADI balances comfort with movement. Window seating, compact tables and carefully planned social spaces create somewhere comfortable enough to enjoy, without becoming a coworking lounge. The environment changes naturally from afternoon into evening through light, music and product.</p>
+    </div>
+    <div class="space-image reveal-img reveal hover-lift">
+<div class="inner-scale" style="width:100%;height:100%;"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 5: DESIGN LANGUAGE ============ -->
+<section class="dl-section pad">
+  <div class="wrap">
+    <span class="h-label reveal" data-ar="لغة التصميم">Design language</span>
+    <h2 class="reveal" style="font-size:clamp(calc(26px * var(--lang-scale)), calc(3.6vw * var(--lang-scale)), calc(38px * var(--lang-scale)));margin-top:20px;max-width:16ch;" data-ar="لكل شيء مكانه.">Everything has a place.</h2>
+    <p class="reveal" style="margin-top:20px;font-size:14.5px;color:var(--charcoal);opacity:0.75;max-width:48ch;font-weight:300;line-height:1.7;" data-ar="تأتي البساطة البصرية من انضباط تشغيلي. صُمم وادي حول تخزين مخفي، وخامات مختارة بعناية، وبار عمل يبقى نظيفًا حتى أثناء الخدمة.">Visual simplicity comes from operational discipline. WADI is designed around concealed storage, deliberate materials and a working bar that remains clean even during service.</p>
+    <div class="dl-scroll reveal">
+      <div class="dl-item hover-lift" style="background-image:url('images/gallery-cup-takeaway.jpg'), repeating-linear-gradient(120deg, rgba(59,45,38,0.05) 0 2px, transparent 2px 22px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="كوب خارجي">Takeaway cup</span></div>
+      <div class="dl-item dark hover-lift" style="background-image:url('images/gallery-cup-ceramic.jpg'), repeating-linear-gradient(120deg, rgba(199,174,131,0.06) 0 2px, transparent 2px 22px), linear-gradient(var(--brown),var(--brown));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="كوب سيراميك">Ceramic cup</span></div>
+      <div class="dl-item hover-lift" style="background-image:url('images/gallery-counter-stone.jpg'), repeating-linear-gradient(120deg, rgba(59,45,38,0.05) 0 2px, transparent 2px 22px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="طاولة حجرية">Stone counter</span></div>
+      <div class="dl-item dark hover-lift" style="background-image:url('images/gallery-bar-equipment.jpg'), repeating-linear-gradient(120deg, rgba(199,174,131,0.06) 0 2px, transparent 2px 22px), linear-gradient(var(--brown),var(--brown));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="معدات البار">Bar equipment</span></div>
+      <div class="dl-item hover-lift" style="background-image:url('images/gallery-seating-detail.jpg'), repeating-linear-gradient(120deg, rgba(59,45,38,0.05) 0 2px, transparent 2px 22px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تفاصيل الجلوس">Seating detail</span></div>
+      <div class="dl-item hover-lift" style="background-image:url('images/gallery-lighting-detail.jpg'), repeating-linear-gradient(120deg, rgba(59,45,38,0.05) 0 2px, transparent 2px 22px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تفاصيل الإضاءة">Lighting detail</span></div>
+      <div class="dl-item dark hover-lift" style="background-image:url('images/gallery-dessert-plating.jpg'), repeating-linear-gradient(120deg, rgba(199,174,131,0.06) 0 2px, transparent 2px 22px), linear-gradient(var(--brown),var(--brown));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تقديم الحلويات">Dessert plating</span></div>
+      <div class="dl-item hover-lift" style="background-image:url('images/gallery-frontage-dusk.jpg'), repeating-linear-gradient(120deg, rgba(59,45,38,0.05) 0 2px, transparent 2px 22px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="الواجهة عند الغسق">Frontage, dusk</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 6: DAY -> NIGHT ============ -->
+<section class="dn-wrap" id="dn">
+  <div class="dn-sticky" id="dnSticky">
+    <div class="dn-sky-track">
+      <div class="dn-celestial" id="dnCelestial">
+        <div class="dn-glow" id="dnGlow"></div>
+        <svg viewBox="0 0 100 100" width="100%" height="100%" style="position:relative;z-index:2;overflow:visible;">
+          <defs>
+            <radialGradient id="orbGrad" cx="36%" cy="30%" r="78%">
+              <stop id="orbStop0" offset="0%" stop-color="#FFFEFA"/>
+              <stop id="orbStop1" offset="24%" stop-color="#F6E6C6"/>
+              <stop id="orbStop2" offset="52%" stop-color="#E1BF8E"/>
+              <stop id="orbStop3" offset="80%" stop-color="#B9946B"/>
+              <stop id="orbStop4" offset="100%" stop-color="#93765A"/>
+            </radialGradient>
+            <radialGradient id="orbSpecular" cx="32%" cy="26%" r="16%">
+              <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.65"/>
+              <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="50" cy="50" r="34" fill="url(#orbGrad)"/>
+          <circle cx="50" cy="50" r="34" fill="url(#orbSpecular)" id="orbSpecularCircle"/>
+          <circle cx="50" cy="50" r="33.4" fill="none" stroke="rgba(255,252,244,0.4)" stroke-width="0.7" id="orbRim"/>
+        </svg>
+      </div>
+    </div>
+    <div class="wrap dn-inner">
+      <div class="dn-cols">
+        <div class="dn-col" id="dnAfternoon">
+          <span class="h-label" data-ar="بعد الظهر">Afternoon</span>
+          <h3 data-ar="مشرق ومباشر">Bright &amp; direct</h3>
+          <ul>
+            <li data-ar="القهوة">Coffee</li>
+            <li data-ar="مشروبات مثلجة">Iced drinks</li>
+            <li data-ar="طلبات خارجية">Takeaway</li>
+            <li data-ar="اجتماعات">Meetings</li>
+          </ul>
+        </div>
+        <div class="dn-col" id="dnEvening">
+          <span class="h-label" data-ar="المساء">Evening</span>
+          <h3 data-ar="دافئ وهادئ">Warm &amp; slower</h3>
+          <ul>
+            <li data-ar="الحلويات">Dessert</li>
+            <li>V60</li>
+            <li data-ar="الشاي">Tea</li>
+            <li data-ar="مجموعات وأحاديث">Groups &amp; conversation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 7: COFFEE PROGRAMME ============ -->
+<section class="coffee-section pad">
+  <div class="wrap">
+    <span class="h-label reveal" data-ar="برنامج القهوة">Coffee programme</span>
+    <h2 class="reveal" data-ar="من الإسبريسو إلى القهوة المقطّرة.">From espresso to filter.</h2>
+    <p class="body reveal" data-ar="تبدأ القائمة الأساسية بالإسبريسو والقهوة بالحليب، مدعومة ببرنامج قهوة مقطّرة متجدد. تقدّم قهوة اليوم مذاقًا يوميًا سهلًا. يقدّم V60 قهوة أحادية المصدر مختارة بعناية، ساخنة أو مثلجة. تمتد القهوة الباردة بالفكرة نفسها إلى المساء.">The core menu begins with espresso and milk-based coffee, supported by a rotating filter programme. Coffee of the Day offers an accessible everyday brew. V60 introduces carefully selected single-origin coffees served hot or iced. Cold brew extends the same approach into the evening.</p>
+
+    <div class="coffee-interactive reveal" id="coffeeInteractive">
+      <div class="coffee-tabs" id="coffeeTabs">
+        <button class="coffee-tab active" data-body="Bright, concentrated and intense — the base for every milk drink on the menu." data-body-ar="قوية ومركّزة — أساس كل مشروب بالحليب في القائمة." data-strength="88" data-label="Body" data-label-ar="الكثافة" data-ar="إسبريسو">Espresso</button>
+        <button class="coffee-tab" data-body="Espresso softened with steamed milk — flat white, cortado and latte." data-body-ar="إسبريسو ممزوج بالحليب المُبخّر — فلات وايت، كورتادو ولاتيه." data-strength="55" data-label="Body" data-label-ar="الكثافة" data-ar="حليب">Milk</button>
+        <button class="coffee-tab" data-body="Coffee of the Day — an easy, balanced, accessible everyday brew." data-body-ar="قهوة اليوم — مذاق يومي سهل ومتوازن." data-strength="42" data-label="Body" data-label-ar="الكثافة" data-ar="مقطّرة">Filter</button>
+        <button class="coffee-tab" data-body="Hand-poured, single-origin coffee, carefully selected and served hot or iced." data-body-ar="قهوة أحادية المصدر مصبوبة يدويًا، مختارة بعناية، تُقدَّم ساخنة أو مثلجة." data-strength="60" data-label="Body" data-label-ar="الكثافة">V60</button>
+        <button class="coffee-tab" data-body="Slow-steeped over many hours — smooth, low acidity, built for the evening." data-body-ar="منقوعة ببطء لساعات طويلة — ناعمة، منخفضة الحموضة، مثالية للمساء." data-strength="35" data-label="Body" data-label-ar="الكثافة" data-ar="قهوة باردة">Cold brew</button>
+      </div>
+      <div class="coffee-detail">
+        <p class="coffee-detail-text" id="coffeeDetailText">Bright, concentrated and intense — the base for every milk drink on the menu.</p>
+        <div class="coffee-meter">
+          <span class="coffee-meter-label" id="coffeeMeterLabel">Body</span>
+          <div class="coffee-meter-track"><div class="coffee-meter-fill" id="coffeeMeterFill" style="width:88%"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 8: DESSERT ============ -->
+<section class="dessert-section pad">
+  <div class="wrap dessert-inner">
+    <div class="dessert-image reveal-img reveal hover-lift">
+<div class="inner-scale" style="width:100%;height:100%;"></div>
+    </div>
+    <div class="dessert-text">
+      <span class="h-label reveal" data-ar="الحلويات">Dessert</span>
+      <h2 class="reveal" style="margin-top:16px;" data-ar="الحلويات ليست فكرة ثانوية.">Dessert is not an afterthought.</h2>
+      <p class="reveal" data-ar="ستكون قائمة الحلويات في وادي صغيرة عن قصد. كل منتج يجب أن يكسب مكانه من خلال النكهة والملمس والتقديم.">WADI's dessert menu will be deliberately small. Each product must earn its place through flavour, texture and presentation.</p>
+      <p class="kicker-line reveal" data-ar="الهدف بسيط: شيء يستحق العودة من أجله.">The objective is simple: something worth returning for.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SECTION 9: CULTURAL INFLUENCE ============ -->
+<section class="culture-section pad" id="culture">
+  <div class="wrap">
+    <span class="h-label reveal" data-ar="الإلهام">Influence</span>
+    <h2 class="reveal" data-ar="مستوحى من ثقافة قهوة مختلفة.">Inspired by a different coffee culture.</h2>
+    <p class="reveal" data-ar="في مدن مثل الرياض وجدة، تشكّل المقاهي جزءًا من إيقاع المساء الاجتماعي. يستلهم وادي من تلك الثقافة، لا بإعادة تكرارها، بل بترجمة روح ضيافتها وتصميمها وحضورها في ساعات المساء المتأخرة إلى لندن.">Across cities such as Riyadh and Jeddah, coffee houses form part of the evening's social rhythm. WADI takes inspiration from that culture — not by recreating it, but by translating its sense of hospitality, design and late-evening relevance into London.</p>
+  </div>
+</section>
+
+<!-- ============ SECTION 10: LOCATION ============ -->
+<section class="location-section pad" id="location">
+  <div class="wrap loc-inner">
+    <div class="loc-text">
+      <span class="h-label reveal" data-ar="الموقع">Location</span>
+      <h2 class="reveal" style="margin-top:16px;" data-ar="ماربل آرتش / إدجوير رود">Marble Arch / Edgware Road</h2>
+      <p class="reveal" data-ar="يبحث وادي حاليًا عن موقعه الأول قرب ماربل آرتش وإدجوير رود، منطقة يلتقي فيها نشاط لندن النهاري بثقافة ضيافة مسائية راسخة.">WADI is currently searching for its first home around Marble Arch and Edgware Road — a district where London's daytime economy meets an established evening hospitality culture.</p>
+      <a class="btn btn-dark reveal btn-lift btn-magnetic" href="#contact-form" data-ar="استفسارات العقارات والشراكات">Property &amp; partnership enquiries</a>
+    </div>
+    <form class="contact-form reveal" id="contact-form">
+      <input type="text" placeholder="Name" required data-ar-placeholder="الاسم">
+      <input type="email" placeholder="Email" required data-ar-placeholder="البريد الإلكتروني">
+      <input type="text" placeholder="Company / organisation (optional)" data-ar-placeholder="الشركة / الجهة (اختياري)">
+      <textarea placeholder="Tell us about your property, partnership or enquiry" data-ar-placeholder="أخبرنا عن عقارك أو شراكتك أو استفسارك"></textarea>
+      <button type="submit" class="btn btn-outline-dark btn-lift" style="align-self:flex-start;" data-ar="إرسال الاستفسار">Send enquiry</button>
+      <span class="form-note" id="contactNote" data-ar="هذا النموذج عنصر مؤقت للعرض — يجب ربطه بخدمة نماذج (مثل Formspree) أو بنظامك الخاص قبل الإطلاق.">This form is a visual placeholder — connect it to a form service (e.g. Formspree) or your own backend before launch.</span>
+    </form>
+  </div>
+</section>
+
+<!-- ============ SECTION 11: BUILDING WADI ============ -->
+<section class="build-section pad" id="build">
+  <div class="wrap">
+    <span class="h-label reveal" data-ar="نبني وادي">Building WADI</span>
+    <h2 class="reveal" style="font-size:clamp(calc(26px * var(--lang-scale)), calc(3.6vw * var(--lang-scale)), calc(38px * var(--lang-scale)));margin-top:20px;" data-ar="تابع مراحل البناء.">Follow the build.</h2>
+    <p class="reveal" style="margin-top:18px;font-size:14.5px;color:var(--charcoal);opacity:0.75;max-width:44ch;font-weight:300;" data-ar="وادي لم يفتح أبوابه بعد. نحن نبنيه بعناية.">WADI isn't open yet. We're building it properly.</p>
+    <div class="build-grid reveal">
+      <div class="build-item hover-lift" style="background-image:url('images/build-coffee-testing.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تجربة القهوة">Coffee testing</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-material-samples.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="عينات الخامات">Material samples</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-ceramic-prototypes.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="نماذج سيراميك أولية">Ceramic prototypes</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-cup-development.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تطوير الأكواب">Cup development</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-dessert-trials.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تجارب الحلويات">Dessert trials</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-counter-fabrication.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="تصنيع الطاولة">Counter fabrication</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-lighting-tests.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="اختبارات الإضاءة">Lighting tests</span></div>
+      <div class="build-item hover-lift" style="background-image:url('images/build-first-espresso.jpg'), repeating-linear-gradient(125deg, rgba(59,45,38,0.06) 0 2px, transparent 2px 24px), linear-gradient(var(--cream),var(--cream));background-size:cover,auto,auto;background-position:center,center,center;"><span data-ar="أول إسبريسو">First espresso</span></div>
+    </div>
+    <a class="btn btn-outline-dark reveal btn-lift btn-magnetic" style="margin-top:40px;" href="https://instagram.com/wadi.london" target="_blank" rel="noopener">@wadi.london</a>
+  </div>
+</section>
+
+<!-- ============ SECTION 12: EMAIL SIGNUP ============ -->
+<section class="signup-section pad" id="signup">
+  <div class="wrap">
+    <span class="h-label reveal" style="color:var(--taupe);" data-ar="انضم للقائمة">Join the list</span>
+    <h2 class="reveal" data-ar="كن أول من يعلم.">Be there first.</h2>
+    <p class="reveal" data-ar="إعلانات الافتتاح. الانطلاقات التجريبية. جلسات تذوق القهوة. لا شيء زائد عن الحاجة.">Opening announcements. Soft launches. Coffee tastings. Nothing unnecessary.</p>
+    <form class="signup-form reveal" id="signupForm">
+      <input type="email" placeholder="Email address" required id="signupEmail" data-ar-placeholder="البريد الإلكتروني">
+      <button type="submit" class="btn-magnetic" data-ar="انضم إلى وادي">Join WADI</button>
+    </form>
+    <div class="signup-msg" id="signupMsg"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div class="foot-logo" id="footLogo">WADI<span class="arabic">وادي</span></div>
+      <div class="foot-links">
+        <div class="foot-col">
+          <span data-ar="تواصل اجتماعي">Social</span>
+          <a href="https://instagram.com/wadi.london" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://tiktok.com/@wadi.london" target="_blank" rel="noopener">TikTok</a>
+        </div>
+        <div class="foot-col">
+          <span data-ar="استفسارات">Enquiries</span>
+          <a href="mailto:business@wadi.london" data-ar="استفسارات الأعمال">Business enquiries</a>
+          <a href="mailto:property@wadi.london" data-ar="استفسارات العقارات">Property enquiries</a>
+          <a href="mailto:press@wadi.london" data-ar="الإعلام">Press</a>
+          <a href="#" style="opacity:0.5;" data-ar="وظائف — قريبًا">Careers — soon</a>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span data-ar="لندن، المملكة المتحدة">London, United Kingdom</span>
+      <span class="legal"><a href="#" data-ar="الخصوصية">Privacy</a><a href="#" data-ar="ملفات تعريف الارتباط">Cookies</a><a href="#" data-ar="الشروط">Terms</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Nav stays hidden until the veil has opened — "just the veil, then the
+  // room" — and fades in tied to the same scroll-scrubbed progress.
+  const nav = document.getElementById('nav');
+
+  // Veil reveal — two panels part like doors opening on the room, scroll-
+  // scrubbed rather than timed, so it tracks the user's scroll exactly in
+  // either direction. Nothing on the panels repeats what's revealed behind
+  // them, so the reveal actually pays off. Nav sits at a lower z-index than
+  // the panels, so it's hidden by simple stacking order while closed rather
+  // than needing its own separate opacity animation.
+  const veilWrap = document.getElementById('veilWrap');
+  const veilLeft = document.getElementById('veilLeft');
+  const veilRight = document.getElementById('veilRight');
+  const heroInner = document.getElementById('heroInner');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function updateVeil(){
+    if (reduceMotion) return;
+    const rect = veilWrap.getBoundingClientRect();
+    const total = veilWrap.offsetHeight - window.innerHeight;
+    let progress = total > 0 ? -rect.top / total : 1;
+    progress = Math.max(0, Math.min(1, progress));
+    const eased = 1 - Math.pow(1 - progress, 2); // ease-out: quick start, gentle finish
+
+    veilLeft.style.transform = `translateX(${-eased * 100}%)`;
+    veilRight.style.transform = `translateX(${eased * 100}%)`;
+    const blocking = progress > 0.92 ? 'none' : 'auto';
+    veilLeft.style.pointerEvents = blocking;
+    veilRight.style.pointerEvents = blocking;
+
+    // only hold a GPU compositing layer for the panels while they're
+    // actually mid-transition — releasing it once fully open (or fully
+    // closed) avoids paying for two permanently-promoted layers for the
+    // rest of the page's lifetime
+    const midTransition = progress > 0 && progress < 1;
+    const wc = midTransition ? 'transform' : 'auto';
+    if (veilLeft.style.willChange !== wc) veilLeft.style.willChange = wc;
+    if (veilRight.style.willChange !== wc) veilRight.style.willChange = wc;
+
+    heroInner.style.transform = `scale(${1.05 - eased * 0.05})`;
+    heroInner.style.opacity = 0.75 + eased * 0.25;
+
+    // nav stays invisible until the doors have properly parted
+    nav.style.opacity = eased;
+    nav.style.pointerEvents = eased > 0.4 ? 'auto' : 'none';
+  }
+  if (!reduceMotion) updateVeil();
+
+  // Calm reveal-on-scroll for all .reveal elements
+  const revealEls = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        revealObserver.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.15, rootMargin:'0px 0px -8% 0px'});
+  revealEls.forEach(el => revealObserver.observe(el));
+
+  // Day -> Night: background shifts gently, and a warm-to-cool orb tracks
+  // an arc across the sky. No phase mask this time — just a well-graded
+  // gradient, a soft specular highlight, and a fine rim light for depth.
+  const dnWrap = document.getElementById('dn');
+  const dnSticky = document.getElementById('dnSticky');
+  const dnCelestial = document.getElementById('dnCelestial');
+  const dnGlow = document.getElementById('dnGlow');
+  const orbStop0 = document.getElementById('orbStop0');
+  const orbStop1 = document.getElementById('orbStop1');
+  const orbStop2 = document.getElementById('orbStop2');
+  const orbStop3 = document.getElementById('orbStop3');
+  const orbStop4 = document.getElementById('orbStop4');
+  const orbSpecularCircle = document.getElementById('orbSpecularCircle');
+  const orbRim = document.getElementById('orbRim');
+  const dnAfternoon = document.getElementById('dnAfternoon');
+  const dnEvening = document.getElementById('dnEvening');
+
+  function lerpColor(c1, c2, t){
+    const a = c1.match(/\w\w/g).map(x=>parseInt(x,16));
+    const b = c2.match(/\w\w/g).map(x=>parseInt(x,16));
+    const r = a.map((v,i)=>Math.round(v + (b[i]-v)*t));
+    return {css:`rgb(${r[0]},${r[1]},${r[2]})`, hex:`#${r.map(v=>v.toString(16).padStart(2,'0')).join('')}`};
+  }
+
+  function updateDayNight(){
+    const rect = dnWrap.getBoundingClientRect();
+    const total = dnWrap.offsetHeight - window.innerHeight;
+    let progress = -rect.top / total;
+    progress = Math.max(0, Math.min(1, progress));
+
+    const eased = progress * 0.85;
+    const sky = lerpColor('9E8A6C','3B2D26', eased);
+    dnSticky.style.background = sky.css;
+
+    // arc: rises from bottom-left, peaks center-top, sets bottom-right
+    const arcX = 12 + progress * 76;
+    const arcY = 68 - Math.sin(progress * Math.PI) * 52;
+    dnCelestial.style.left = arcX + '%';
+    dnCelestial.style.top = arcY + '%';
+
+    // orb material: warm sunlit gold fading gracefully to a pale, cool stone
+    orbStop0.setAttribute('stop-color', lerpColor('FFFEFA','FBF7EE', progress).hex);
+    orbStop1.setAttribute('stop-color', lerpColor('F6E6C6','E9DCC2', progress).hex);
+    orbStop2.setAttribute('stop-color', lerpColor('E1BF8E','C9B8A2', progress).hex);
+    orbStop3.setAttribute('stop-color', lerpColor('B9946B','9C8E7A', progress).hex);
+    orbStop4.setAttribute('stop-color', lerpColor('93765A','746859', progress).hex);
+
+    // specular highlight softens slightly toward evening; rim stays crisp
+    orbSpecularCircle.style.opacity = 0.9 - progress * 0.25;
+    orbRim.setAttribute('stroke', progress < 0.5 ? 'rgba(255,252,244,0.42)' : 'rgba(240,236,228,0.3)');
+
+    // glow warmth follows the same curve, softening toward evening
+    const glowColor = lerpColor('EBCE9C','C9B8A2', progress).css.replace('rgb','rgba').replace(')', `,${0.5 - progress*0.22})`);
+    dnGlow.style.background = `radial-gradient(circle, ${glowColor} 0%, rgba(201,184,162,0.14) 45%, rgba(201,184,162,0) 72%)`;
+
+    const isEvening = progress > 0.5;
+    dnAfternoon.style.opacity = isEvening ? 0.35 : 1;
+    dnEvening.style.opacity = isEvening ? 1 : 0.35;
+    dnAfternoon.style.color = progress > 0.3 ? '#C7AE83' : '#211E1B';
+    dnEvening.style.color = progress > 0.3 ? '#C7AE83' : '#211E1B';
+  }
+  updateDayNight();
+
+  // Scroll progress bar
+  const progressBar = document.getElementById('scrollProgress');
+  function updateProgressBar(){
+    const h = document.documentElement;
+    const scrolled = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+    progressBar.style.width = scrolled + '%';
+  }
+  updateProgressBar();
+
+  function updateNavSolid(){
+    nav.classList.toggle('solid', window.scrollY > 40);
+  }
+
+  // ---- Single rAF-batched scroll handler ----
+  // Previously each effect above (veil, day/night, progress bar, nav) had
+  // its own scroll listener, each independently calling getBoundingClientRect
+  // on every raw scroll event. On a fast trackpad or high-refresh display
+  // that's several forced layout reads per rendered frame, which is the
+  // main cause of scroll jank on lower-powered machines. Batching them all
+  // into one requestAnimationFrame-scheduled pass means the work happens
+  // at most once per actual displayed frame, no matter how many raw scroll
+  // events fire in between.
+  let scrollScheduled = false;
+  function onScroll(){
+    if (scrollScheduled) return;
+    scrollScheduled = true;
+    requestAnimationFrame(() => {
+      updateNavSolid();
+      if (!reduceMotion) updateVeil();
+      updateDayNight();
+      updateProgressBar();
+      scrollScheduled = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  window.addEventListener('resize', onScroll, {passive:true});
+
+  // Magnetic buttons, tilt cards and material sheen — also rAF-throttled,
+  // since mousemove can fire even more often than scroll
+  function throttleRAF(fn){
+    let scheduled = false;
+    let lastEvent = null;
+    return function(e){
+      lastEvent = e;
+      if (scheduled) return;
+      scheduled = true;
+      requestAnimationFrame(() => { fn(lastEvent); scheduled = false; });
+    };
+  }
+
+  // Magnetic buttons — subtle pull toward cursor
+  document.querySelectorAll('.btn-magnetic').forEach(btn => {
+    btn.addEventListener('mousemove', throttleRAF((e) => {
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width/2;
+      const y = e.clientY - r.top - r.height/2;
+      btn.style.transform = `translate(${x*0.22}px, ${y*0.3}px)`;
+    }));
+    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; });
+  });
+
+  // Subtle 3D tilt on pillar cards
+  document.querySelectorAll('.tilt-card').forEach(card => {
+    card.style.transformStyle = 'preserve-3d';
+    card.addEventListener('mousemove', throttleRAF((e) => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left)/r.width - 0.5;
+      const py = (e.clientY - r.top)/r.height - 0.5;
+      card.style.transform = `translateY(-7px) perspective(700px) rotateX(${-py*5}deg) rotateY(${px*5}deg)`;
+    }));
+    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
+  });
+
+  // Material sheen — a soft light that tracks the cursor across gallery
+  // and build tiles, as if catching a real material sample
+  document.querySelectorAll('.dl-item, .build-item').forEach(tile => {
+    const sheen = document.createElement('div');
+    sheen.className = 'sheen';
+    tile.appendChild(sheen);
+    tile.addEventListener('mousemove', throttleRAF((e) => {
+      const r = tile.getBoundingClientRect();
+      tile.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+      tile.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+    }));
+  });
+
+  // Coffee programme — interactive tabs with description + intensity meter,
+  // language-aware so switching EN/AR mid-browse updates the open tab too
+  const coffeeTabs = document.querySelectorAll('.coffee-tab');
+  const coffeeDetailText = document.getElementById('coffeeDetailText');
+  const coffeeMeterFill = document.getElementById('coffeeMeterFill');
+  const coffeeMeterLabel = document.getElementById('coffeeMeterLabel');
+
+  function applyActiveTabContent(instant){
+    const active = document.querySelector('.coffee-tab.active');
+    if (!active) return;
+    const body = currentLang === 'ar' ? active.dataset.bodyAr : active.dataset.body;
+    const label = currentLang === 'ar' ? active.dataset.labelAr : active.dataset.label;
+    coffeeMeterFill.style.width = active.dataset.strength + '%';
+    if (instant){
+      coffeeDetailText.textContent = body;
+      coffeeMeterLabel.textContent = label;
+    } else {
+      coffeeDetailText.classList.remove('show');
+      setTimeout(() => {
+        coffeeDetailText.textContent = body;
+        coffeeMeterLabel.textContent = label;
+        coffeeDetailText.classList.add('show');
+      }, 180);
+    }
+  }
+  coffeeTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      coffeeTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      applyActiveTabContent(false);
+    });
+  });
+  const coffeeSection = document.getElementById('coffeeInteractive');
+  const coffeeRevealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting){
+        coffeeDetailText.classList.add('show');
+        coffeeRevealObserver.disconnect();
+      }
+    });
+  }, {threshold:0.3});
+  coffeeRevealObserver.observe(coffeeSection);
+
+  // Signup form — visual only, no backend wired up yet
+  const signupForm = document.getElementById('signupForm');
+  const signupMsg = document.getElementById('signupMsg');
+  signupForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    signupMsg.textContent = currentLang === 'ar'
+      ? "شكرًا لك — تم تسجيلك في القائمة. (يجب ربط هذا النموذج بخدمة بريدية قبل الإطلاق.)"
+      : "Thank you — you're on the list. (Connect this form to a mailing list service before launch.)";
+  });
+
+  // Contact form — visual only
+  const contactForm = document.getElementById('contact-form');
+  contactForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    document.getElementById('contactNote').textContent = currentLang === 'ar'
+      ? "شكرًا — هذا تأكيد مؤقت للعرض. يجب ربط هذا النموذج بخدمة حقيقية قبل الإطلاق."
+      : "Thanks — this is a placeholder confirmation. Wire this form to a real backend or service before launch.";
+  });
+
+  // ---------------- LANGUAGE TOGGLE (EN / AR) ----------------
+  // Every translatable element carries data-ar; its original English
+  // markup is captured into data-en on load, so toggling is a clean swap
+  // in either direction with no risk of losing the source text.
+  let currentLang = 'en';
+  const translatableEls = document.querySelectorAll('[data-ar]');
+  translatableEls.forEach(el => { el.dataset.en = el.innerHTML; });
+  const placeholderEls = document.querySelectorAll('[data-ar-placeholder]');
+  placeholderEls.forEach(el => { el.dataset.enPlaceholder = el.placeholder; });
+
+  const langToggle = document.getElementById('langToggle');
+  const menuBtn = document.getElementById('menuBtn');
+
+  function setLanguage(lang){
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.body.classList.toggle('lang-ar', lang === 'ar');
+
+    translatableEls.forEach(el => {
+      el.innerHTML = lang === 'ar' ? el.dataset.ar : el.dataset.en;
+    });
+    placeholderEls.forEach(el => {
+      el.placeholder = lang === 'ar' ? el.dataset.arPlaceholder : el.dataset.enPlaceholder;
+    });
+
+    langToggle.textContent = lang === 'ar' ? 'EN' : 'عربي';
+    menuBtn.setAttribute('aria-label', lang === 'ar' ? 'القائمة' : 'Menu');
+    applyActiveTabContent(true);
+  }
+  langToggle.addEventListener('click', () => {
+    setLanguage(currentLang === 'en' ? 'ar' : 'en');
+  });
+</script>
+
+
+</body>
+</html>
